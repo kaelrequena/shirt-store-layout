@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso-vue3</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="cart">Carrinho: {{ cart }}</div>
+        <div id="product-display">
+            <div id="product-container">
+                <div id="product-image">
+                    <img :src="image" :alt="selectedVariant.color + ' shirt'">
+                </div>
+                <div id="product-info">
+                    <h1>{{ productTitle + " " + brand}}</h1>
+                    <p v-if="inStock > 10">Em Estoque</p>
+                    <p v-else-if="inStock <= 10 && inStock > 0">Últimas unidades</p>
+                    <p v-else>Fora de Estoque</p>
+                    
+                    <ul>
+                        <li v-for="(detail, index) in details" :key="index">
+                            {{ detail }}
+                        </li>
+                    </ul>
+                    
+                    <div 
+                        v-for="variant in variants" 
+                        :key="variant.id"
+                        @mouseover="changeImage(variant)"
+                        class="color-circle"
+                        :style="{ backgroundColor: variant.color }"
+                        :title="variant.color">
+                    </div>
+                    
+                    <button 
+                        class="button" 
+                        @click="addToCart" 
+                        :disabled="!inStock">
+                        Adicionar ao Carrinho
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, reactive, computed } = Vue;
+        
+        createApp({
+            setup() {
+                const cart = ref(0);
+                const productTitle = ref('Camiseta');
+                
+                const details = ref([
+                    '50% Algodão',
+                    '30% Poliéster', 
+                    '20% Lã'
+                ]);
+                
+                const variants = reactive([
+                    { id: 1, color: 'blue', image: 'assets/images/t-shirt-blue.png', quantity: 15 },
+                    { id: 2, color: 'green', image: 'assets/images/t-shirt-green.png', quantity: 5 }
+                ]);
+                
+                const selectedVariant = ref(0); 
+                
+        
+                const image = computed(() => {
+                    return variants[selectedVariant.value].image;
+                });
+                
+    
+                const inStock = computed(() => {
+                    return variants[selectedVariant.value].quantity;
+                });
+                
+           
+                const changeImage = (variant) => {
+                    const index = variants.findIndex(v => v.id === variant.id);
+                    if (index !== -1) {
+                        selectedVariant.value = index;
+                    }
+                };
+                
+         
+                const addToCart = () => {
+                    if (inStock.value > 0) {
+                        cart.value++;
+                        variants[selectedVariant.value].quantity--;
+                    }
+                };
+                
+                return {
+                    cart,
+                    productTitle,
+                    brand:"MarcomUny",
+                    details,
+                    variants,
+                    image,
+                    inStock,
+                    selectedVariant,
+                    changeImage,
+                    addToCart
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
